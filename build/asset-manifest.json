@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/spherical-trochoids/static/css/main.4f69a703.css",
+    "main.js": "/spherical-trochoids/static/js/main.0f4d836e.js",
+    "index.html": "/spherical-trochoids/index.html",
+    "main.4f69a703.css.map": "/spherical-trochoids/static/css/main.4f69a703.css.map",
+    "main.0f4d836e.js.map": "/spherical-trochoids/static/js/main.0f4d836e.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.4f69a703.css",
+    "static/js/main.0f4d836e.js"
+  ]
+}

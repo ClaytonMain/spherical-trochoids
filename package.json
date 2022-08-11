@@ -1,7 +1,7 @@
 {
   "name": "spherical-trochoids",
   "version": "0.1.0",
-  "homepage": "https://ClaytonMain.github.io/spherical-trochoids",
+  "homepage": "https://claytonmain.github.io/spherical-trochoids",
   "private": true,
   "dependencies": {
     "@react-three/fiber": "^6.0.14",
