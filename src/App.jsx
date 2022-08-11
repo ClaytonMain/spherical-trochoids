@@ -3,6 +3,8 @@ import { useTransition } from "react-spring";
 import Plotter from "./components/plotter/Plotter";
 import InfoModal from "./components/infoModal/InfoModal";
 import { api } from "./store";
+import GitHubLogo from "./images/GitHubLogo.png";
+import KoFiLogo from "./images/kofi-logo.png";
 
 function App() {
   const [modalVisible, setModalVisible] = useState(false);
@@ -20,7 +22,7 @@ function App() {
   return (
     <div className="App">
       <div className="top-menu-container">
-        <div>
+        <div className="top-menu-inner-container">
           <button
             className="show-modal-button"
             onClick={() => setModalVisible(true)}
@@ -39,14 +41,33 @@ function App() {
               )
           )}
         </div>
+        <a
+          href="https://github.com/ClaytonMain/spherical-trochoids"
+          target="_blank"
+          rel="noreferrer"
+        >
+          <div className="top-menu-inner-container">
+            <img
+              style={{
+                border: "0px",
+                height: "80%",
+              }}
+              src={GitHubLogo}
+              border="0"
+              alt="View the source on GitHub"
+            />
+          </div>
+        </a>
         <a href="https://ko-fi.com/Y8Y1EATSL" target="_blank" rel="noreferrer">
-          <img
-            height="36"
-            style={{ border: "0px", height: "36px" }}
-            src="https://cdn.ko-fi.com/cdn/kofi5.png?v=3"
-            border="0"
-            alt="Buy Me a Coffee at ko-fi.com"
-          />
+          <div className="top-menu-inner-container">
+            <img
+              // height="35"
+              style={{ border: "0px", height: "80%" }}
+              src={KoFiLogo}
+              border="0"
+              alt="Buy Me a Coffee at ko-fi.com"
+            />
+          </div>
         </a>
       </div>
 

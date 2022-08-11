@@ -19,11 +19,11 @@ function AnimationControls() {
   const onEditEnd = () => {
     setScrubbing(false);
   };
-  const [{ tValControl, animateCurveControl }, set] = useControls(
+  const [, set] = useControls(
     () => ({
       Animation: folder({
         Curve: folder({
-          TValControl: {
+          tValControl: {
             label: "t",
             hint: 'The current value of "t" for the displayed curve.',
             value: tVal.current,
@@ -83,22 +83,11 @@ function AnimationControls() {
     });
   });
 
-  // These if statements feel clunky, but it prevents a lot of warnings from being
-  // thrown, so it'll stay for now.
   useFrame(() => {
-    if (
-      tVal.current &&
-      animateCurve.current &&
-      tValControl &&
-      animateCurveControl
-    ) {
-      if (tValControl !== tVal.current) {
-        set({ tValControl: tVal.current });
-      }
-      if (animateCurveControl !== animateCurve.current) {
-        set({ animateCurveControl: animateCurve.current });
-      }
-    }
+    set({
+      tValControl: tVal.current,
+      animateCurveControl: animateCurve.current,
+    });
   });
   return null;
 }
