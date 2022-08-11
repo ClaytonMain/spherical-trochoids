@@ -1,13 +1,14 @@
 {
   "files": {
-    "main.css": "/spherical-trochoids/static/css/main.4f69a703.css",
-    "main.js": "/spherical-trochoids/static/js/main.0f4d836e.js",
+    "main.css": "/spherical-trochoids/static/css/main.ba3fd90b.css",
+    "main.js": "/spherical-trochoids/static/js/main.84616aa7.js",
+    "static/media/kofi-logo.png": "/spherical-trochoids/static/media/kofi-logo.5f6930ff3d446a2c2770.png",
     "index.html": "/spherical-trochoids/index.html",
-    "main.4f69a703.css.map": "/spherical-trochoids/static/css/main.4f69a703.css.map",
-    "main.0f4d836e.js.map": "/spherical-trochoids/static/js/main.0f4d836e.js.map"
+    "main.ba3fd90b.css.map": "/spherical-trochoids/static/css/main.ba3fd90b.css.map",
+    "main.84616aa7.js.map": "/spherical-trochoids/static/js/main.84616aa7.js.map"
   },
   "entrypoints": [
-    "static/css/main.4f69a703.css",
-    "static/js/main.0f4d836e.js"
+    "static/css/main.ba3fd90b.css",
+    "static/js/main.84616aa7.js"
   ]
 }
