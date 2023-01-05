@@ -42,13 +42,13 @@ Hover over the row labels within the control panel to view a brief description o
 
 ## About
 
-I originally derived the formulae to describe spherical epitrochoids and hypotrochoids after being unable to find any such formulae online. As far as I can tell, I'm the first person to derive such formulae, but _please_ let me know if you discover an example of such formulae existing prior to 2013!
+I originally derived the formulae to describe spherical epitrochoids and hypotrochoids after being unable to find any such formulae online. As far as I can tell, I'm the first person to derive such formulae, but _please_ let me know if you discover an example of such formulae existing prior to 2014!
 
-I tried to publish the formulae describing these curves shortly after deriving them, but the journal to which I had submitted it rejected my paper. Basically, they suggested publishing it to an undergraduate journal since the math isn't particularly advanced.Eventually, I just sort of lost steam on the project while rewriting the paper for publication to an undergraduate journal, and I ended up not doing anything with it for several years.
+I tried to publish the formulae describing these curves shortly after deriving them, but the journal to which I had submitted my paper rejected it for reasons I don't fully recall. Eventually, I sort of lost steam on the project while rewriting the paper for publication to a different journal, and I ended up not doing anything with it for several years. If you're interested in reading the paper I tried to publish, you can find it in this repo.
 
-Recently, I decided I probably ought to do something with these formulae soon before someone else came along and derived the formulae themselves. I really didn't want to bother dealing with academic journals again, so I figured I'd try doing something fun with it (if this satisfies your definition of "fun"), and, well, this is where it ended up!
+Recently, I decided I probably ought to do something with these formulae soon before someone else came along and derived the formulae themselves. I really didn't want to bother dealing with academic journals again, so I figured I'd try doing something fun with it and this is where it ended up!
 
-I'd never worked with React before this project, and honestly, it's pretty confusing. I'm certain there's a lot of stuff in the code that could be improved (and I'm about 90% sure I've got a memory leak somewhere), but I'm finally at a point where I feel comfortable going live with the project.
+I'd never worked with React before this project, and honestly, it's pretty confusing. I'm certain there's a lot of stuff in the code that could be improved (and I'm about 90% sure I've got a memory leak somewhere), but I'm finally at a point where I feel comfortable sharing this project with others.
 
 ## Planned Improvements
 
