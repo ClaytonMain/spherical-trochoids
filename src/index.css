@@ -18,7 +18,7 @@ code {
 
 .top-menu-container {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   z-index: 1001;
   position: absolute;
   justify-content: center;
@@ -50,7 +50,7 @@ code {
   width: 40px;
   height: 40px;
   border-radius: 5px;
-  margin: 5px 2.5px;
+  margin: 2.5px 2.5px;
   display: flex;
   justify-content: center;
   align-items: center;
