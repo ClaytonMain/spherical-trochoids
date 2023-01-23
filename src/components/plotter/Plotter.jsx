@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from "react";
 import { Canvas, useFrame, extend, useThree } from "@react-three/fiber";
-import { folder, useControls } from "leva";
+import { folder, useControls, Leva} from "leva";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { MeshLine, MeshLineMaterial } from "three.meshline";
 import { DoubleSide, Vector3, Object3D } from "three";
@@ -254,6 +254,7 @@ function Scene() {
 function Plotter() {
   return (
     <div className="canvasWrapper">
+      <Leva titleBar={{title: "👈 Click to Toggle Panel"}} />
       <Scene />
     </div>
   );
