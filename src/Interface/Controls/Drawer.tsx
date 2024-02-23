@@ -2,11 +2,11 @@ import { animated, useSpring } from "@react-spring/web";
 import { useKeyboardControls } from "@react-three/drei";
 import { Leva } from "leva";
 import { useEffect, useState } from "react";
-import { ShortcutEnum } from "./ShortcutWrapper";
+import { ShortcutEnum } from "../../ShortcutWrapper";
 
 export default function Drawer() {
-    const [active, setActive] = useState(false);
-    const [subscribeKeys, _] = useKeyboardControls<ShortcutEnum>();
+    const [active, setActive] = useState(true);
+    const [subscribeKeys] = useKeyboardControls<ShortcutEnum>();
     const props = useSpring({
         right: active ? 0 : -350,
         opacity: active ? 1 : 0,
@@ -35,7 +35,7 @@ export default function Drawer() {
             unsubscribeEscape();
             unsubscribeToggleDrawer();
         };
-    }, [active]);
+    }, [active, subscribeKeys]);
 
     return (
         <>

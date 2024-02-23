@@ -1,4 +1,4 @@
-import Drawer from "./Drawer";
+import Drawer from "./Controls/Drawer";
 
 export default function Interface() {
     return (
