@@ -1,16 +1,12 @@
 import { KeyboardControls } from "@react-three/drei";
 import { ReactNode } from "react";
-
-export enum ShortcutEnum {
-    escape = "escape",
-    toggleDrawer = "toggleDrawer",
-}
+import { ShortcutEnum } from "./types";
 
 interface ShortcutWrapperProps {
     children?: ReactNode;
 }
 
-export const ShortcutWrapper = ({ children }: ShortcutWrapperProps) => {
+const ShortcutWrapper = ({ children }: ShortcutWrapperProps) => {
     return (
         <KeyboardControls
             map={[

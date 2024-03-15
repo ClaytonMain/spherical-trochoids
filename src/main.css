@@ -27,8 +27,12 @@ body,
 
 .leva-controls-container {
     align-self: stretch;
-    background: darkorange;
+    background: #181c20;
     width: 350px;
+    max-height: 100vh;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    scrollbar-color: rgb(55, 60, 75) rgba(0, 0, 0, 0);
 }
 
 .fill {

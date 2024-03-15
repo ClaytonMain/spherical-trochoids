@@ -10,9 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@leva-ui/plugin-plot": "0.9.15",
     "@react-spring/web": "9.7.3",
     "@react-three/drei": "9.96.5",
     "@react-three/fiber": "8.15.15",
+    "dependencies": "^0.0.1",
     "immer": "^10.0.3",
     "leva": "0.9.35",
     "mathjs": "12.3.1",
