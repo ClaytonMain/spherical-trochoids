@@ -2,11 +2,17 @@ import {
     LevaInputs,
     LevaPanel,
     button,
-    folder,
     useControls,
     useCreateStore,
 } from "leva";
 import { useEffect, useState } from "react";
+import {
+    defaultInputValueConstraints,
+    defaultInputValues,
+    minTRange,
+    tMax,
+    tMin,
+} from "../../SphericalTrochoid/configs";
 import { useTemporary } from "../../stores/useTemporary";
 import { justText } from "../LevaPlugins/JustText";
 
@@ -19,127 +25,221 @@ export default function InputControls() {
         });
     }, [store]);
 
-    const [controls] = useControls(
+    const handleInnerGeometryShapeChange = (shape: string) => {
+        if (shape === "Sphere") {
+            store.getInput("innerGeometryRadius1")!.label = "R (Radius)";
+        } else if (shape === "Torus") {
+            store.getInput("innerGeometryRadius1")!.label = "R1 (Radius 1)";
+        }
+    };
+
+    const renderInnerGeometryRadius2 = () => {
+        const innerGeometryShape = get("innerGeometryShape");
+        if (innerGeometryShape === "Sphere") {
+            return false;
+        } else if (innerGeometryShape === "Torus") {
+            return true;
+        }
+        return true;
+    };
+
+    const handledEqualsOuterGeometryRadiusChange = (v: boolean) => {
+        store.disableInputAtPath("dLineRadius", v);
+        if (v) {
+            set({ dLineRadius: get("outerGeometryRadius") });
+        }
+    };
+
+    const [startEditTRange, setStartEditTRange] = useState([0, 0]);
+
+    const handleCurveTRangeChange = (v: [number, number]) => {
+        const tRange = v[1] - v[0];
+        if (tRange >= minTRange) return;
+
+        let setTo: [number, number];
+        if (v[0] > startEditTRange[0] || v[1] > startEditTRange[1]) {
+            // Editing t start.
+            if (v[0] + minTRange > tMax) {
+                setTo = [tMax - minTRange, tMax];
+            } else {
+                setTo = [v[0], v[0] + minTRange];
+            }
+        } else if (v[0] < startEditTRange[0] || v[1] < startEditTRange[1]) {
+            // Editing t end.
+            if (v[1] - minTRange < tMin) {
+                setTo = [tMin, tMin + minTRange];
+            } else {
+                setTo = [v[1] - minTRange, v[1]];
+            }
+        } else {
+            return;
+        }
+        set({ curveTRange: setTo });
+    };
+
+    const handleCurveTRangeEditStart = (v: [number, number]) => {
+        setStartEditTRange(v);
+    };
+
+    const renderCurveTRange = () => {
+        const calculationType = get("calculationType");
+        if (calculationType === "Fixed Interval") {
+            return true;
+        } else if (calculationType === "Endless") {
+            return false;
+        }
+        return true;
+    };
+
+    const renderCurveTStart = () => {
+        const calculationType = get("calculationType");
+        if (calculationType === "Fixed Interval") {
+            return false;
+        } else if (calculationType === "Endless") {
+            return true;
+        }
+        return true;
+    };
+
+    const handleUpdatePlot = () => {
+        const calculationState = useTemporary.getState().calculationState;
+        if (calculationState === "ready") {
+            useTemporary.setState({
+                calculationState: "calculate input",
+            });
+        }
+    };
+
+    useEffect(() => {
+        const unsubscribeCalculationState = useTemporary.subscribe(
+            (state) => state.calculationState,
+            (value) => {
+                if (value === "calculating") {
+                    store.setSettingsAtPath("Update Plot", { disabled: true });
+                } else if (value === "ready") {
+                    store.setSettingsAtPath("Update Plot", { disabled: false });
+                }
+            }
+        );
+        return () => {
+            unsubscribeCalculationState();
+        };
+    });
+
+    // @ts-expect-error Doesn't like how I'm using set.
+    const [, set, get] = useControls(
         () => ({
             calculationType: {
                 label: "Calculation Type",
-                value: "Fixed Interval",
+                value: defaultInputValues.calculationType,
                 options: ["Fixed Interval", "Endless"],
             },
             stepSize: {
                 label: "Step Size",
-                value: 0.01,
-                min: 0.01,
-                max: 0.1,
-                step: 0.01,
+                value: defaultInputValues.stepSize,
+                min: defaultInputValueConstraints.stepSizeRange[0],
+                max: defaultInputValueConstraints.stepSizeRange[1],
             },
-            otherTestThing: justText({
-                text: "Hooray for such a convoluted system :D",
+
+            innerGeometryLabel: justText({
+                text: "Inner Geometry",
             }),
-            testThing: justText({
-                text: "asdf asdf asdf asdf asdf asdf asdf asdf asdf asdf asdf asdf asdf",
-            }),
-            otherThing: {
-                label: "After asdf",
-                value: 9999,
+            innerGeometryShape: {
+                label: "Shape",
+                value: defaultInputValues.innerGeometryShape,
+                options: ["Sphere", "Torus"],
+                onChange: handleInnerGeometryShapeChange,
             },
-            "Inner Geometry": folder({
-                innerGeometryShape: {
-                    label: "Shape",
-                    value: "Sphere",
-                    options: ["Sphere", "Torus"],
-                },
-                innerGeometryRadius1: {
-                    label: "Radius 1",
-                    value: 4,
-                },
-                innerGeometryRadius2: {
-                    label: "Radius 2",
-                    value: 1,
-                },
-                // innerGeometryNote: {
-                //     label: "Note",
-                //     value: 'I\'d love for "Radius 1" to just display "Radius" and for "Radius 2" to be hidden when "Sphere" is selected, but we\'ll see how feasible that is.',
-                //     editable: false,
-                //     rows: true,
-                // },
+            innerGeometryRadius1: {
+                label: "R1 (Radius 1)",
+                value: defaultInputValues.innerGeometryRadius1,
+                min: defaultInputValueConstraints.innerGeometryRadius1Range[0],
+                max: defaultInputValueConstraints.innerGeometryRadius1Range[1],
+            },
+            innerGeometryRadius2: {
+                label: "R2 (Radius 2)",
+                value: defaultInputValues.innerGeometryRadius2,
+                min: defaultInputValueConstraints.innerGeometryRadius2Range[0],
+                max: defaultInputValueConstraints.innerGeometryRadius2Range[1],
+                render: renderInnerGeometryRadius2,
+            },
+
+            outerGeometryLabel: justText({
+                text: "Outer Geometry",
             }),
-            "Outer Geometry": folder({
-                outerGeometryShape: {
-                    label: "Shape",
-                    value: "Circle",
-                    options: ["Circle", "Sphere"],
+            outerGeometryShape: {
+                label: "Shape",
+                value: defaultInputValues.outerGeometryShape,
+                options: ["Circle", "Sphere"],
+            },
+            outerGeometryRadius: {
+                label: "r (Radius)",
+                value: defaultInputValues.outerGeometryRadius,
+                min: defaultInputValueConstraints.outerGeometryRadiusRange[0],
+                max: defaultInputValueConstraints.outerGeometryRadiusRange[1],
+                onChange: (v) => {
+                    if (get("dEqualsOuterGeometryRadius")) {
+                        return set({ dLineRadius: v });
+                    }
                 },
-                outerGeometryRadius: {
-                    label: "Radius",
-                    value: 1,
-                },
+            },
+
+            dLineLabel: justText({
+                text: "d Line",
             }),
-            "d Line": folder({
-                dLineSetRadius: {
-                    label: "Set Radius",
-                    value: true,
-                },
-                dLineRadius: {
-                    label: "Radius",
-                    value: 1,
-                },
-                // dLineNote: {
-                //     label: "Note",
-                //     value: 'I want "Radius" to be hidden when "Set Radius" is false. Also, if I can come up with a better label than "Set Radius", that would be great.',
-                //     editable: false,
-                //     rows: true,
-                // },
+            dEqualsOuterGeometryRadius: {
+                label: "d = r",
+                value: defaultInputValues.dEqualsOuterGeometryRadius,
+                onChange: handledEqualsOuterGeometryRadiusChange,
+            },
+            dLineRadius: {
+                label: "d (Radius)",
+                value: defaultInputValues.dLineRadius,
+                min: defaultInputValueConstraints.dLineRadiusRange[0],
+                max: defaultInputValueConstraints.dLineRadiusRange[1],
+            },
+
+            curveLabel: justText({
+                text: "Curve",
             }),
-            Curve: folder({
-                curveTheta: {
-                    label: "Theta",
-                    value: "2t",
-                    type: LevaInputs.STRING,
-                },
-                curvePhi: {
-                    label: "Phi",
-                    value: "t",
-                    type: LevaInputs.STRING,
-                },
-                // curveNote1: {
-                //     label: "Note",
-                //     value: 'It would be really cool if I could use the "plot" plugin with "t" as the variable instead of "x". Will see if it\'s possible to modify/extend this, and if not, will look into custom plugin. Might just have to use regular text field though. :(',
-                //     editable: false,
-                //     rows: true,
-                // },
-                curveTRange: {
-                    label: "t Range",
-                    value: [-10, 40],
-                    min: -200,
-                    max: 200,
-                },
-                curveTStart: {
-                    label: "t Start",
-                    value: "-10",
-                },
-                // curveNote2: {
-                //     label: "Note",
-                //     value: 'Would be great to display "t Range" when "Fixed Interval" and "t Start" when "Endless". Or maybe show "t Start" for both, but have something like "t Interval Length" (bad name, but you get the gist) when set to "Fixed Interval".',
-                //     editable: false,
-                //     rows: true,
-                // },
-            }),
-            "Update Plot": button(() =>
-                useTemporary.setState({
-                    calculationStatus: "needs calculating",
-                })
-            ),
+            curveTheta: {
+                label: "Theta",
+                value: defaultInputValues.curveTheta,
+                type: LevaInputs.STRING,
+            },
+            curvePhi: {
+                label: "Phi",
+                value: defaultInputValues.curvePhi,
+                type: LevaInputs.STRING,
+            },
+            curveTRange: {
+                label: "t Range",
+                value: defaultInputValues.curveTRange,
+                min: defaultInputValueConstraints.curveTRangeRange[0],
+                max: defaultInputValueConstraints.curveTRangeRange[1],
+                onChange: handleCurveTRangeChange,
+                onEditStart: handleCurveTRangeEditStart,
+                render: renderCurveTRange,
+            },
+            curveTStart: {
+                label: "t Start",
+                value: defaultInputValues.curveTStart,
+                min: defaultInputValueConstraints.curveTStartRange[0],
+                max: defaultInputValueConstraints.curveTStartRange[1],
+                render: renderCurveTStart,
+            },
+
+            "Update Plot": button(handleUpdatePlot, { disabled: true }),
         }),
         { store }
     );
-    console.log("Input controls:", controls);
 
     return (
         <LevaPanel
             store={store}
             fill
             flat
+            theme={{ colors: { highlight1: "#ffffff" } }}
             titleBar={{
                 title: "Input",
                 drag: false,

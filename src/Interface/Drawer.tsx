@@ -4,25 +4,45 @@ import { useEffect, useState } from "react";
 import { ShortcutEnum } from "../ShortcutWrapper/types";
 import LevaPanels from "./LevaPanels/LevaPanels";
 
-/**
- * TODO:
- *  - Less of a "todo" and more of a note: Might be able to handle
- *      the displayed field changes between "Fixed Interval" and
- *      "Endless" by just showing and hiding separate LevaPanel
- *      components. Not sure if that's a bad idea or not, but don't
- *      want to forget the idea.
- */
+function getWindowDimensions() {
+    const { innerWidth: width, innerHeight: height } = window;
+    return {
+        width,
+        height,
+    };
+}
+
+function useWindowDimensions() {
+    const [windowDimensions, setWindowDimensions] = useState(
+        getWindowDimensions()
+    );
+
+    useEffect(() => {
+        function handleResize() {
+            setWindowDimensions(getWindowDimensions());
+        }
+
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
+    return windowDimensions;
+}
 
 export default function Drawer() {
-    const [active, setActive] = useState(true);
+    const [active, setActive] = useState(false);
     const [subscribeKeys] = useKeyboardControls<ShortcutEnum>();
+    const { height, width } = useWindowDimensions();
+
     const props = useSpring({
-        right: active ? 0 : -350,
+        right: active ? 0 : width > 700 ? -350 : 0,
+        top: width <= 700 ? (active ? height - 300 : height - 50) : 0,
         opacity: active ? 1 : 0,
+        rotateX: active ? "180deg" : "0deg",
+        rotate: width <= 700 ? "0deg" : "270deg",
     });
 
     useEffect(() => {
-        console.log("Drawer useEffect called");
         const unsubscribeEscape = subscribeKeys(
             (state) => state.escape,
             (pressed) => {
@@ -31,11 +51,9 @@ export default function Drawer() {
         );
         const unsubscribeToggleDrawer = subscribeKeys(
             (state) => {
-                // console.log(state);
                 return state.toggleDrawer;
             },
             (pressed) => {
-                // console.log(pressed);
                 if (pressed) setActive(!active);
             }
         );
@@ -46,25 +64,42 @@ export default function Drawer() {
         };
     }, [active, subscribeKeys]);
 
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            window.scrollTo(0, 0);
+            return () => clearTimeout(timeoutId);
+        }, 1000);
+    }, []);
+
     return (
         <>
             <animated.div
-                style={{
-                    opacity: props.opacity,
-                    pointerEvents: active ? "all" : "none",
-                }}
-                className="fill"
-                onClick={() => setActive(false)}
-            ></animated.div>
-            <animated.div
-                style={{ right: props.right }}
+                style={{ right: props.right, top: props.top }}
                 className="control-panel-container"
             >
                 <div
-                    className="control-panel-display-toggle"
+                    className="control-panel-button-holder"
                     onClick={() => setActive(!active)}
-                ></div>
+                >
+                    <div className="control-panel-display-toggle">
+                        <animated.svg
+                            width={30}
+                            height={30}
+                            className="arrow"
+                            style={{
+                                rotate: props.rotate,
+                                rotateX: props.rotateX,
+                            }}
+                        >
+                            <polygon
+                                points="0,30 15,0, 30,30 25,28 15,8 5,28"
+                                style={{ fill: "white" }}
+                            />
+                        </animated.svg>
+                    </div>
+                </div>
                 <div className="leva-controls-container">
+                    {/* <div style={{ background: "limegreen" }}>HULLO THERE</div> */}
                     <LevaPanels />
                 </div>
             </animated.div>

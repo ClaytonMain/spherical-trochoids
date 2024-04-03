@@ -11,40 +11,42 @@ export default function CameraControls() {
         });
     }, [store]);
 
-    const [controls] = useControls(
+    useControls(
         () => ({
             autoRotate: {
                 label: "Auto Rotate",
                 value: true,
+                onChange: (v) => useTemporary.setState({ autoRotate: v }),
             },
             speed: {
                 label: "Speed",
                 value: 1,
-                min: -20,
-                max: 20,
+                min: -30,
+                max: 30,
+                step: 0.5,
+                onChange: (v) => useTemporary.setState({ autoRotateSpeed: v }),
             },
-            cameraSpeedNote: {
-                label: "Note",
-                value: "Not sure if I want speed on a slider or not.",
-                editable: false,
-                rows: true,
+            autoZoom: {
+                label: "Auto Zoom to Fit",
+                value: true,
+                onChange: (v) => useTemporary.setState({ autoZoomToFit: v }),
             },
         }),
         { store }
     );
-    console.log("Camera controls:", controls);
 
     return (
         <LevaPanel
             store={store}
             fill
             flat
+            theme={{ colors: { highlight1: "#ffffff" } }}
             titleBar={{
                 title: "Camera",
                 drag: false,
                 filter: false,
             }}
-            collapsed={true}
+            collapsed={false}
         />
     );
 }

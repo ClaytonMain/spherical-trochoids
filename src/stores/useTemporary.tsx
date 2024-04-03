@@ -6,12 +6,15 @@ import { immer } from "zustand/middleware/immer";
 
 /**
  * None of the values in useTemporary are saved between page reloads.
- * However, calculation config/parameter & visual settings history
- * will be stored in `useSaved`.
  */
-type CalculationStatus = "ready" | "calculating" | "needs calculating";
+type CalculationState =
+    | "ready"
+    | "calculating"
+    | "calculate input"
+    | "calculate random";
 
 interface LevaStores {
+    lights: StoreType | undefined;
     camera: StoreType | undefined;
     animation: StoreType | undefined;
     parameterHistory: StoreType | undefined;
@@ -22,15 +25,21 @@ interface LevaStores {
 
 interface TemporaryState {
     levaStores: LevaStores;
-    calculationStatus: CalculationStatus;
+    calculationState: CalculationState;
     fixedIntervalCurvePoints: Float32Array;
     uselessVariable: number;
     uselessFunction: () => void;
     t: number;
     ind: number;
     lValues: Float32Array;
+    transformMatrixValues: Float32Array;
     parser: Parser;
     scrubbing: boolean;
+    autoRotate: boolean;
+    autoRotateSpeed: number;
+    autoZoomToFit: boolean;
+    repositionCamera: boolean;
+    randomizeIn: number;
 }
 
 const placeholderFloat32Array = new Float32Array([1, 0, 0, 1, 0, 0]);
@@ -39,6 +48,7 @@ export const useTemporary = create<TemporaryState>()(
     subscribeWithSelector(
         immer((set) => ({
             levaStores: {
+                lights: undefined,
                 camera: undefined,
                 animation: undefined,
                 parameterHistory: undefined,
@@ -46,16 +56,22 @@ export const useTemporary = create<TemporaryState>()(
                 input: undefined,
                 style: undefined,
             },
-            calculationStatus: "ready",
+            calculationState: "ready",
             fixedIntervalCurvePoints: placeholderFloat32Array,
             uselessVariable: Math.random(),
             uselessFunction: () =>
                 set((state) => (state.uselessVariable = Math.random())),
-            t: -50,
+            t: -10,
             ind: 0,
             lValues: placeholderFloat32Array,
+            transformMatrixValues: placeholderFloat32Array,
             parser: parser(),
             scrubbing: false,
+            autoRotate: true,
+            autoRotateSpeed: 1.0,
+            autoZoomToFit: true,
+            repositionCamera: false,
+            randomizeIn: 30,
         }))
     )
 );

@@ -3,13 +3,12 @@ import { useControls } from "leva";
 import { PerfHeadless, getPerf, usePerf } from "r3f-perf";
 import { useEffect, useRef } from "react";
 
+/**
+ * Not using this because, ironically, it was causing the FPS to
+ * degrade over time, lol.
+ */
+
 export const PerfMonitor = () => {
-    /**
-     * TODO:
-     *  - Figure out why the FPS drop is happening.
-     *  - Display some stats in Leva plots.
-     *  - Add more stats.
-     */
     const [, set] = useControls("Performance Monitor", () => ({
         maxMemory: {
             value: -1.0,

@@ -1,6 +1,6 @@
 import { LevaPanel, folder, useControls, useCreateStore } from "leva";
 import { useEffect, useState } from "react";
-import { inputKeys } from "../../SphericalTrochoid/shared";
+import { inputKeys } from "../../SphericalTrochoid/sharedFunctions";
 import { useSaved } from "../../stores/useSaved";
 import { useTemporary } from "../../stores/useTemporary";
 import { justText } from "../LevaPlugins/JustText";
@@ -14,34 +14,84 @@ export default function ParameterHistoryPanel() {
         });
     }, [store]);
 
-    const [controls, set] = useControls(
+    const [, set] = useControls(
         () => ({
-            "Current Plot": folder({
-                currentPlot: justText({
-                    text: new Array(inputKeys.length).fill("").join("\n"),
-                }),
-            }),
-            History: folder({
-                historyNote1: {
-                    label: "Note",
-                    value: "TODO: Would like to display history in a list, but need to figure out how.",
-                    rows: true,
-                    editable: false,
+            "Current Plot": folder(
+                {
+                    currentPlot: justText({
+                        text: new Array(inputKeys.length + 1)
+                            .fill("")
+                            .join("\n"),
+                    }),
                 },
-            }),
+                { collapsed: false }
+            ),
+            History: folder(
+                {
+                    plotHistory1: justText({
+                        text: new Array(inputKeys.length + 1)
+                            .fill("")
+                            .join("\n"),
+                    }),
+                    plotHistory2: justText({
+                        text: new Array(inputKeys.length + 1)
+                            .fill("")
+                            .join("\n"),
+                    }),
+                    plotHistory3: justText({
+                        text: new Array(inputKeys.length + 1)
+                            .fill("")
+                            .join("\n"),
+                    }),
+                },
+                { collapsed: true }
+            ),
         }),
         { store }
     );
 
     useEffect(() => {
         const unsubscribePlotHistory = useSaved.subscribe(
-            (state) => state.plotHistory[0],
+            (state) => state.currentPlot,
             (value) => {
                 set({
                     currentPlot: {
                         text: Object.keys(value)
                             // @ts-expect-error accessing by "k"
                             .map((k) => `${k}: ${value[k]}`)
+                            .join("\n"),
+                    },
+                    plotHistory1: {
+                        text: Object.keys(useSaved.getState().plotHistory[1])
+                            .map(
+                                (k) =>
+                                    `${k}: ${
+                                        // @ts-expect-error accessing by "k"
+                                        useSaved.getState().plotHistory[1][k]
+                                    }`
+                            )
+                            .join("\n"),
+                    },
+                    plotHistory2: {
+                        text: Object.keys(useSaved.getState().plotHistory[2])
+                            .map(
+                                (k) =>
+                                    `${k}: ${
+                                        // @ts-expect-error accessing by "k"
+                                        useSaved.getState().plotHistory[2][k]
+                                    }`
+                            )
+                            .join("\n"),
+                    },
+                    plotHistory3: {
+                        text: Object.keys(useSaved.getState().plotHistory[3])
+                            .map(
+                                (k) =>
+                                    `${k}: ${
+                                        // @ts-expect-error accessing by "k"
+                                        useSaved.getState().plotHistory[3][k]
+                                    }`
+                            )
                             .join("\n"),
                     },
                 });
@@ -52,13 +102,12 @@ export default function ParameterHistoryPanel() {
         };
     });
 
-    console.log("Parameter History Panel:", controls);
-
     return (
         <LevaPanel
             store={store}
             fill
             flat
+            theme={{ colors: { highlight1: "#ffffff" } }}
             titleBar={{
                 title: "Parameter History",
                 drag: false,

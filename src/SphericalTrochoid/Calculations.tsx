@@ -1,310 +1,222 @@
-import * as math from "mathjs";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useSaved } from "../stores/useSaved.tsx";
 import { useTemporary } from "../stores/useTemporary.tsx";
-import { getCurrentInputs } from "./shared.tsx";
+import {
+    DefaultRandomizationSettingType,
+    createParser,
+    getCurrentInputs,
+    getRandomizationSettings,
+    innerGeometryShapes,
+    outerGeometryShapes,
+    randomizationKeys,
+} from "./sharedFunctions.tsx";
 
 /**
- * TODO:
- *   - Come up with better names for the "ptzation" stuff.
- *   - Add correct Torus ptzations.
+ * Just a reminder, the calculations are (mostly) performed in the
+ * "calculationsWorker.ts" file, but most of the math function & variable
+ * definitions are actually in the "shared.tsx" file.
+ *
+ * This file pretty much just handles deciding when calculations should
+ * be performed. Also getting random inputs & getting calculation inputs,
+ * but those will probably be moved somewhere else at some point.
  */
-const spherePtzationFormatter = (
-    theta: StringOrNumber,
-    phi: StringOrNumber,
-    R1: StringOrNumber,
-    r: StringOrNumber
-) => ({
-    outerCenter: [
-        `( ( ${R1} ) + ( ${r} ) ) * cos( ${theta} ) * cos( ${phi} )`,
-        `( ( ${R1} ) + ( ${r} ) ) * sin( ${theta} ) * cos( ${phi} )`,
-        `( ( ${R1} ) + ( ${r} ) ) * sin( ${phi} )`,
-    ],
-    contactPoint: [
-        `( ${R1} ) * cos( ${theta} ) * cos( ${phi} )`,
-        `( ${R1} ) * sin( ${theta} ) * cos( ${phi} )`,
-        `( ${R1} ) * sin( ${phi} )`,
-    ],
-    basisX: [
-        `cos( ${theta} ) * cos( ${phi} )`,
-        `sin( ${theta} ) * cos( ${phi} )`,
-        `sin( ${phi} )`,
-    ],
-});
-const torusPtzationFormatter = (
-    theta: StringOrNumber,
-    phi: StringOrNumber,
-    R1: StringOrNumber,
-    R2: StringOrNumber,
-    r: StringOrNumber
-) => ({
-    outerCenter: [
-        `( ${R1} + ( ${R2} + ${r} ) * cos( ${phi} ) ) * cos( ${theta} )`,
-        `( ${R1} + ( ${R2} + ${r} ) * cos( ${phi} ) ) * sin( ${theta} )`,
-        `( ${R2} + ${r} ) * sin(${phi})`,
-    ],
-    contactPoint: [
-        `( ${R1} + ${R2} * cos( ${phi} ) ) * cos( ${theta} )`,
-        `( ${R1} + ${R2} * cos( ${phi} ) ) * sin( ${theta} )`,
-        `${R2} * sin(${phi})`,
-    ],
-    basisX: [
-        `cos( ${theta} ) * cos( ${phi} )`,
-        `sin( ${theta} ) * cos( ${phi} )`,
-        `sin( ${phi} )`,
-    ],
-});
 
-type StringOrNumber = string | number;
-
-interface SpherePtzationParams {
-    shape: "Sphere";
-    theta: string;
-    phi: string;
-    R1: number;
-    r: number;
-}
-
-interface TorusPtzationParams {
-    shape: "Torus";
-    theta: string;
-    phi: string;
-    R1: number;
-    R2: number;
-    r: number;
-}
-
-const getPtzations = (params: SpherePtzationParams | TorusPtzationParams) => {
-    let ptzations = null;
-    if (params.shape === "Sphere") {
-        ptzations = spherePtzationFormatter(
-            params.theta,
-            params.phi,
-            params.R1,
-            params.r
-        );
-    } else if (params.shape === "Torus") {
-        ptzations = torusPtzationFormatter(
-            params.theta,
-            params.phi,
-            params.R1,
-            params.R2,
-            params.r
-        );
-    } else {
-        return;
-    }
-    const { outerCenter, contactPoint, basisX } = ptzations;
-    const outerCenterDt = outerCenter.map((x) => math.derivative(x, "t"));
-    const contactPointDt = contactPoint.map((x) => math.derivative(x, "t"));
-    const basisXDt = basisX.map((x) => math.derivative(x, "t"));
-    return {
-        outerCenter,
-        outerCenterDt,
-        contactPoint,
-        contactPointDt,
-        basisX,
-        basisXDt,
-    };
+const checkSetting = (
+    setting: { value: boolean } & DefaultRandomizationSettingType
+) => {
+    return setting.value && !setting.disabled && setting.render;
+};
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const chooseRandomArrayElement = (array: Array<any>) => {
+    return array[Math.floor(Math.random() * array.length)];
 };
 
-const getCalculationStuff = () => {
-    const inputs = getCurrentInputs();
+const randInInterval = (
+    interval: [number, number],
+    roundDenominator: number = 4
+) => {
+    const range = interval[1] - interval[0];
+    return (
+        Math.round(Math.random() * range * roundDenominator) /
+            roundDenominator +
+        interval[0]
+    );
+};
+
+type CheckedSettingsTypes<T extends readonly string[]> = {
+    [Key in T[number]]: boolean;
+};
+
+const getRandomCurveFunction = () => {
+    const functionType = Math.random() <= 2 / 3 ? 1 : 2;
+    if (functionType == 1) {
+        const factorGtOne = Math.random() <= 1 / 2;
+        if (factorGtOne) {
+            return `${randInInterval([1, 5])}t`;
+        } else {
+            return `${randInInterval([0, 1], 16)}t`;
+        }
+    } else if (functionType == 2) {
+        const sinOrCos = Math.random() <= 1 / 2 ? "sin" : "cos";
+        const outerFactor = randInInterval([0, 1], 16);
+        const innerFactor = randInInterval([1, 10]);
+        return `${outerFactor}${sinOrCos}(${innerFactor}t)`;
+    }
+    return "0";
+};
+
+const getRandomInputs = () => {
+    const inputs = { ...useSaved.getState().currentPlot };
+    const randSettings = getRandomizationSettings();
+
+    if (!(inputs && randSettings)) return;
+
+    const checkedSettings = Object.fromEntries(
+        // @ts-expect-error indexing randSettings by string.
+        Object.keys(randSettings).map((k) => [k, checkSetting(randSettings[k])])
+    ) as CheckedSettingsTypes<typeof randomizationKeys>;
+
+    if (checkedSettings.innerGeometryRandomize) {
+        if (checkedSettings.innerGeometryRandomizeShape) {
+            inputs.innerGeometryShape =
+                chooseRandomArrayElement(innerGeometryShapes);
+        }
+        if (checkedSettings.innerGeometryRandomizeRadius1) {
+            inputs.innerGeometryRadius1 = randInInterval(
+                randSettings.innerGeometryRadius1Range.value
+            );
+        }
+        if (checkedSettings.innerGeometryRandomizeRadius2) {
+            inputs.innerGeometryRadius2 = randInInterval(
+                randSettings.innerGeometryRadius2Range.value
+            );
+        }
+    }
+
+    if (checkedSettings.outerGeometryRandomize) {
+        if (checkedSettings.outerGeometryRandomizeShape) {
+            inputs.outerGeometryShape =
+                chooseRandomArrayElement(outerGeometryShapes);
+        }
+        if (checkedSettings.outerGeometryRandomizeRadius) {
+            inputs.outerGeometryRadius = randInInterval(
+                randSettings.outerGeometryRadiusRange.value
+            );
+        }
+    }
+
+    if (checkedSettings.dLineRandomize) {
+        if (checkedSettings.dLineEqualsOuterGeometryRadius) {
+            inputs.dLineRadius = inputs.outerGeometryRadius;
+        } else if (checkedSettings.dLineRandomizeRadius) {
+            inputs.dLineRadius = randInInterval(
+                randSettings.dLineRadiusRange.value
+            );
+        }
+    }
+
+    if (checkedSettings.curveRandomize) {
+        if (checkedSettings.curveRandomizeTheta) {
+            inputs.curveTheta = getRandomCurveFunction();
+        }
+        if (checkedSettings.curveRandomizePhi) {
+            inputs.curvePhi = getRandomCurveFunction();
+        }
+        if (checkedSettings.curveRandomizeTStart) {
+            const newTStart = randInInterval(
+                randSettings.curveTStartRange.value,
+                1
+            );
+            if (inputs.calculationType === "Fixed Interval") {
+                const newTEnd = Math.min(
+                    newTStart + inputs.curveTRange[1] - inputs.curveTRange[0],
+                    200
+                );
+                inputs.curveTRange = [newTStart, newTEnd];
+            } else if (inputs.calculationType === "Endless") {
+                inputs.curveTStart = newTStart;
+            }
+        }
+        if (checkedSettings.curveRandomizeTInterval) {
+            inputs.curveTRange = [
+                inputs.curveTRange[0],
+                Math.min(
+                    inputs.curveTRange[0] +
+                        randInInterval(
+                            randSettings.curveTIntervalRange.value,
+                            1
+                        ),
+                    200
+                ),
+            ];
+        }
+    }
+    return inputs;
+};
+
+const getCalculationInputs = (
+    calculateInputOrRandom: "calculate input" | "calculate random"
+) => {
+    let inputs;
+    if (calculateInputOrRandom === "calculate input") {
+        inputs = getCurrentInputs();
+    } else if (calculateInputOrRandom === "calculate random") {
+        inputs = getRandomInputs();
+    }
 
     if (!inputs) {
         return;
     }
 
-    const calculationType = inputs.calculationType;
-    const stepSize = inputs.stepSize;
-    const innerGeometryShape = inputs.innerGeometryShape;
-    const innerGeometryRadius1 = inputs.innerGeometryRadius1;
-    const innerGeometryRadius2 = inputs.innerGeometryRadius2;
-    const outerGeometryShape = inputs.outerGeometryShape;
-    const outerGeometryRadius = inputs.outerGeometryRadius;
-    const dLineRadius = inputs.dLineRadius;
-    const curveTheta = inputs.curveTheta;
-    const curvePhi = inputs.curvePhi;
-    const curveTRange = inputs.curveTRange;
-
-    const parser = math.parser();
-
-    try {
-        parser.evaluate(`theta = typed({'number': theta(t) = ${curveTheta}})`);
-        parser.evaluate(`phi = typed({'number': phi(t) = ${curvePhi}})`);
-        parser.evaluate(`R1 = ${innerGeometryRadius1}`);
-        parser.evaluate(`R2 = ${innerGeometryRadius2}`);
-        parser.evaluate(`r = ${outerGeometryRadius}`);
-        parser.evaluate(`d = ${dLineRadius}`);
-        parser.evaluate(`stepSize = ${stepSize}`);
-        // TODO: Ensure
-    } catch (error) {
-        /**
-         * TODO: display evaluation error or something.
-         * Also, find a way to call out invalid inputs for theta and phi.
-         */
-        console.log(error);
-        return null;
-    }
-
-    const ptzations = getPtzations({
-        shape: innerGeometryShape,
-        theta: curveTheta,
-        phi: curvePhi,
-        R1: innerGeometryRadius1,
-        R2: innerGeometryRadius2,
-        r: outerGeometryRadius,
-    });
-    if (!ptzations) {
-        // TODO: Raise some sort of error.
-        return null;
-    }
-
-    const {
-        outerCenter,
-        outerCenterDt,
-        contactPoint,
-        contactPointDt,
-        basisX,
-        basisXDt,
-    } = ptzations;
-
-    parser.evaluate(`outerCenter(t) = [${String(outerCenter)}]`);
-    parser.evaluate(`outerCenterDt(t) = [${String(outerCenterDt)}]`);
-    parser.evaluate(`contactPoint(t) = [${String(contactPoint)}]`);
-    parser.evaluate(`contactPointDt(t) = [${String(contactPointDt)}]`);
-    parser.evaluate(`basisX(t) = [${String(basisX)}]`);
-    parser.evaluate(`basisXDt(t) = [${String(basisXDt)}]`);
-
-    // parser.evaluate(
-    //     "outerCenterBasisX(t) = outerCenter(t) ./ norm(outerCenter(t))"
-    // );
-    // parser.evaluate(
-    //     "outerCenterBasisY(t) = outerCenterDt(t) ./ norm(outerCenterDt(t))"
-    // );
-    parser.evaluate("outerCenterBasisX(t) = basisX(t)");
-    parser.evaluate(
-        "outerCenterBasisY(t) = contactPointDt(t) ./ norm(contactPointDt(t))"
-    );
-    parser.evaluate(
-        "outerCenterBasisZ(t) = cross(outerCenterBasisX(t), outerCenterBasisY(t))"
-    );
-    parser.evaluate(
-        "outerCenterBasis(t) = matrixFromColumns(outerCenterBasisX(t), outerCenterBasisY(t), outerCenterBasisZ(t))"
-    );
-
-    if (outerGeometryShape === "Circle") {
-        parser.evaluate("L = 0");
-        parser.evaluate("alpha = L / r");
-        parser.evaluate(
-            "outerRotationMatrix(t) = resize(\
-                matrixFromColumns(\
-                    rotate(outerCenterBasisX(t), alpha, outerCenterBasisZ(t)),\
-                    rotate(outerCenterBasisY(t), alpha, outerCenterBasisZ(t)),\
-                    outerCenterBasisZ(t)\
-                ),\
-                [4, 4]\
-            ).subset(index(4, 4), 1)"
-        );
-        parser.evaluate(
-            "transformMatrix(t) = outerRotationMatrix(t)\
-                .subset(\
-                    index([1, 2, 3], 4),\
-                    outerCenter(t)\
-                )"
-        );
-        parser.evaluate(
-            "curveVec(t) = outerCenter(t)\
-                + resize(column(outerRotationMatrix(t), 1), [3]) .* -d"
-        );
-    }
-
-    let curvePoints = new Float32Array();
-    let lValues = new Float32Array();
-
-    if (calculationType == "Fixed Interval") {
-        const numberOfPoints = Math.ceil(
-            (curveTRange[1] - curveTRange[0]) / stepSize
-        );
-        curvePoints = new Float32Array(numberOfPoints * 3);
-        lValues = new Float32Array(numberOfPoints);
-
-        let i = 0;
-        let curveVec = null;
-
-        for (let t = curveTRange[0]; t < curveTRange[1]; t += stepSize) {
-            parser.set("t", t);
-
-            if (outerGeometryShape === "Circle") {
-                parser.evaluate("alpha = L / r");
-                curveVec = parser
-                    .evaluate(`curveVec(t - ${stepSize})`)
-                    .toArray();
-                // curveVec = parser.evaluate("contactPoint(t)").toArray();
-            } else if (outerGeometryShape === "Sphere") {
-                /**
-                 * TODO: Write sphere code. Should probably break this function
-                 * apart into two functions tbh.
-                 */
-                return;
-            } else {
-                /**
-                 * TODO: Raise an error or something idk.
-                 * This should never happen.
-                 */
-                return;
-            }
-
-            curvePoints[i + 0] = curveVec[0];
-            curvePoints[i + 1] = curveVec[1];
-            curvePoints[i + 2] = curveVec[2];
-
-            lValues[i / 3] = parser.evaluate("L");
-
-            i += 3;
-
-            if (outerGeometryShape === "Circle") {
-                parser.evaluate("L = L + norm(contactPointDt(t)) * stepSize");
-            }
-        }
-    } else if (calculationType == "Endless") {
-        console.log("Endless calculation type.");
-    } else {
-        console.log("Unknown calculation type.");
-    }
-
-    useSaved.getState().addToPlotHistory(inputs);
-
-    return { curvePoints, lValues, parser };
+    return inputs;
 };
 
 const Calculations = () => {
+    const worker: Worker = useMemo(
+        () =>
+            new Worker(new URL("./calculationsWorker.ts", import.meta.url), {
+                type: "module",
+            }),
+        []
+    );
+
     useEffect(() => {
-        const unsubscribeCalculationStatus = useTemporary.subscribe(
-            (state) => state.calculationStatus,
+        worker.onmessage = (event) => {
+            if (event.data.calculationStatus === "success") {
+                useTemporary.setState({
+                    parser: createParser(event.data.inputs),
+                    fixedIntervalCurvePoints: event.data.curvePoints,
+                    lValues: event.data.lValues,
+                    transformMatrixValues: event.data.transformMatrixValues,
+                    repositionCamera: true,
+                });
+            }
+            useSaved.getState().addToPlotHistory(event.data.inputs);
+            useTemporary.setState({ calculationState: "ready" });
+        };
+    }, [worker]);
+
+    useEffect(() => {
+        const unsubscribeCalculationState = useTemporary.subscribe(
+            (state) => state.calculationState,
             (value) => {
-                if (value === "needs calculating") {
-                    useTemporary.setState({ calculationStatus: "calculating" });
-                    const calculationStuff = getCalculationStuff();
-                    if (calculationStuff) {
-                        useTemporary.setState({
-                            fixedIntervalCurvePoints:
-                                calculationStuff.curvePoints,
-                            lValues: calculationStuff.lValues,
-                            parser: calculationStuff.parser,
-                        });
-                    }
-                    useTemporary.setState({ calculationStatus: "ready" });
+                if (
+                    value === "calculate input" ||
+                    value === "calculate random"
+                ) {
+                    const inputs = getCalculationInputs(value);
+                    useTemporary.setState({ calculationState: "calculating" });
+                    worker.postMessage(inputs);
                 }
             }
         );
         return () => {
-            unsubscribeCalculationStatus();
+            unsubscribeCalculationState();
         };
     });
 
     useEffect(() => {
-        useTemporary.setState({ calculationStatus: "needs calculating" });
+        useTemporary.setState({ calculationState: "calculate input" });
     }, []);
 
     return <></>;

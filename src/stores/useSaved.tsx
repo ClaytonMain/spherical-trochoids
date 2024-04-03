@@ -1,40 +1,37 @@
 import { create } from "zustand";
 import { persist, subscribeWithSelector } from "zustand/middleware";
-import { InputTypes, defaultInputValues } from "../SphericalTrochoid/shared";
+import { defaultInputValues } from "../SphericalTrochoid/configs";
+import { InputTypes } from "../SphericalTrochoid/sharedFunctions";
 
 const addToPlotHistory = (inputs: InputTypes) => {
-    // const saveLastNPlots = useSaved.getState().saveLastNPlots;
-    const plotHistory = useSaved.getState().plotHistory;
-
+    const saveLastNPlots = useSaved.getState().saveLastNPlots;
+    const plotHistory = [...useSaved.getState().plotHistory];
     plotHistory.unshift(inputs);
-    plotHistory.pop();
-
-    useSaved.setState({ plotHistory: plotHistory });
-
-    console.log(useSaved.getState().plotHistory);
-
+    if (plotHistory.length > saveLastNPlots) {
+        plotHistory.pop();
+    }
+    useSaved.setState({
+        currentPlot: inputs,
+        plotHistory: plotHistory,
+    });
     return null;
 };
 
 interface SavedState {
     saveLastNPlots: number;
+    currentPlot: InputTypes;
     plotHistory: Array<InputTypes>;
     addToPlotHistory: typeof addToPlotHistory;
-    someValue: number;
-    setSomeValue: (value: number) => void;
-    getSomeValue: () => number;
 }
 
 export const useSaved = create<SavedState>()(
     subscribeWithSelector(
         persist(
-            (set, get) => ({
+            () => ({
                 saveLastNPlots: 10,
+                currentPlot: defaultInputValues,
                 plotHistory: [defaultInputValues],
                 addToPlotHistory: addToPlotHistory,
-                someValue: 0,
-                setSomeValue: (someValue) => set({ someValue }),
-                getSomeValue: () => get().someValue,
             }),
             {
                 name: "general-storage",
