@@ -1,4 +1,4 @@
-# VERY MUCH A WORK IN PROGRESS PLEASE IGNORE
+# Note 2024-04-03: Updated README coming soon.
 
 ## The Great TODO List:
 
