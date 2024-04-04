@@ -126,7 +126,6 @@ export default function InputControls() {
         };
     });
 
-    // @ts-expect-error Doesn't like how I'm using set.
     const [, set, get] = useControls(
         () => ({
             calculationType: {

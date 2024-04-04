@@ -30,7 +30,12 @@ export const useSaved = create<SavedState>()(
             () => ({
                 saveLastNPlots: 10,
                 currentPlot: defaultInputValues,
-                plotHistory: [defaultInputValues],
+                plotHistory: [
+                    defaultInputValues,
+                    defaultInputValues,
+                    defaultInputValues,
+                    defaultInputValues,
+                ],
                 addToPlotHistory: addToPlotHistory,
             }),
             {
