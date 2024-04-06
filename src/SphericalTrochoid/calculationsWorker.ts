@@ -35,7 +35,7 @@ const calculatePoints = (inputs: InputTypes) => {
 
         for (
             let t = inputs.curveTRange[0];
-            t < inputs.curveTRange[1];
+            t <= inputs.curveTRange[1];
             t += inputs.stepSize
         ) {
             parser.set("t", t);

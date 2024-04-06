@@ -53,7 +53,7 @@ export default function AnimationControls() {
                 max: 20,
             },
             fixedIntervalT: {
-                label: "fixed interval t",
+                label: "t",
                 value: t,
                 min: tRange[0],
                 max: tRange[1],
@@ -63,14 +63,8 @@ export default function AnimationControls() {
                 render: renderFixedInterval,
             },
             endlessT: {
-                label: "endless t",
+                label: "t",
                 value: t,
-                disabled: true,
-                render: renderEndless,
-            },
-            setEndlessTTo: {
-                label: 'Set "t" to:',
-                value: 3,
                 disabled: true,
                 render: renderEndless,
             },
