@@ -1,6 +1,370 @@
-# Note 2024-04-03: Updated README coming soon.
+## Control Panel
 
-## The Great TODO List:
+Click the blue button on the right side of the screen (bottom of the screen on mobile) to open the control panel. Click the button again to hide the control panel.
+
+### Camera
+- Auto Rotate
+  - Enables automatic camera rotation.
+- Speed
+  - Controls the automatic camera rotation speed.
+- Auto Zoom to Fit
+  - Automatically zoom the camera to fit new plots whenever a new plot is generated.
+### Animation
+- Animate
+  - Enables animation of the curve, outer geometry, etc.
+- Speed
+  - Controls the animation speed.
+- t
+  - The animation's current `t` value.
+    - When the current plot's calculation type is "Fixed Interval", you may scrub the `t` value by clicking and dragging the slider.
+    - When the current plot's calculation type is "Endless", this `t` field is display-only.
+### Parameter History
+- Current Plot
+  - Displays the parameters used to generate the currently-displayed plot.
+- History
+  - Displays the parameters used by the last three plots. Preserved between page reloads.
+- Please note:
+  - I plan to improve the design of this panel in a future release.
+  - I'd also like to allow old parameters to be reused easily by clicking on them or something like that.
+  - Being able to save & share plot parameters would also be nice.
+### Input
+- Calculation Type
+  - Fixed Interval
+    - Calculates the curve using `t` values within the range specified in `Input > Curve > t Range`.
+  - Endless
+    - Calculates the curve live, starting at the value specified in `Input > Curve > t Start`, and continuing indefinitely until the plot parameters are updated.
+    - Slightly buggy and possibly maybe not entirely mathematically accurate.
+- Step Size
+  - Specifies the change in `t` between each calculated point on the curve ("Fixed Interval" only).
+  - A smaller step size will generally generate a smoother curve, but will take longer to calculate.
+- Inner Geometry
+  - Shape
+    - The shape of the inner geometry.
+    - Please note:
+      - The curves generated when "Torus" is the inner geometry might not be mathematically accurate. They still look neat though.
+  - R (Radius)
+    - Sphere only.
+    - The radius of the sphere.
+  - R1 (Radius 1)
+    - Torus only.
+    - The "major radius" of the torus.
+  - R2 (Radius 2)
+    - Torus only.
+    - The "minor radius" of the torus.
+- Outer Geometry
+  - Shape
+    - The shape of the outer geometry.
+  - r (Radius)
+    - The radius of the outer geometry.
+- d Line
+  - d = r
+    - Selecting "d = r" forces "d" to equal "r" (the outer geometry radius).
+    - This ensures that the curve is drawn from a point on the outer edge of the outer geometry.
+  - d (Radius)
+    - The radius from the center of the outer geometry to the point at which the curve is drawn.
+    - This input is disabled when "d = r" is selected.
+- Curve
+  - Theta
+    - The function of `t` controlling the rotation of the outer geometry's center point around the z-axis.
+      - Try setting `Theta` to `t`, `Phi` to `0`, and clicking the "Update Plot" button to see how `Theta` controls the position of the outer geometry.
+      - Must be a number or a valid function of `t`.
+  - Phi
+    - The function of `t` controlling the rotation of the outer geometry's center point off the xy-plane.
+      - Try setting `Phi` to `t`, `Theta` to `0`, and clicking the "Update Plot" button to see how `Phi` controls the position of the outer geometry.
+      - Must be a number or a valid function of `t`.
+  - t Range ("Fixed Interval" only)
+    - The interval of `t` values on which the curve will be evaluated.
+  - t Start ("Endless" only)
+    - The starting value of `t`.
+- Update Plot
+  - Clicking this button will update the display plot using the provided input values.
+### Curve Randomization
+- Auto Randomize
+  - Automatically randomizes the displayed plot after a given condition is met.
+- Auto Randomize Type
+  - At t Max ("Fixed Interval" only)
+    - Randomizes the displayed plot once `t` reaches the end of the curve's `t Range`.
+  - At t Value ("Endless" only)
+    - Randomizes the displayed plot once `t` reaches the value specified in `Randomize @ t`.
+  - Randomize @ t
+    - The value of `t` at which the curve will be randomized.
+    - Only visible when `At t Value` is the selected `Auto Randomize Type`.
+  - Every n Seconds
+    - Randomizes the displayed plot every `n` seconds.
+  - Randomize every
+    - The number of seconds to wait before randomizing (i.e. the `n` in `Every n Seconds`).
+    - Only visible when `Every n Seconds` is the selected `Auto Randomize Type`.
+  - Randomizing in
+    - The number of seconds remaining until the curve randomizes.
+    - Only visible when `Every n Seconds` is the selected `Auto Randomize Type`.
+- Inner Geometry
+  - Randomize Enabled
+    - Allows the inner geometry parameters to be randomized.
+  - Randomize Shape
+    - Allows the inner geometry shape to be randomized.
+  - Randomize Radius 1
+    - Allows the inner geometry `R (Radius)` (Sphere) and `R1 (Radius 1)` (Torus) radius parameters to be randomized.
+  - R1 Rand. Range
+    - The range of allowed random values for `R` and `R1`.
+  - Randomize Radius 2
+    - Allows the inner geometry `R2 (Radius 2)` value to be randomized.
+  - R2 Rand. Range
+    - The range of allowed random values for `R2`.
+- Outer Geometry
+  - Randomize Enabled
+    - Allows the outer geometry parameters to be randomized.
+  - Randomize Shape
+    - Allows the outer geometry shape to be randomized.
+  - Randomize Radius
+    - Allows the outer geometry radius to be randomized.
+  - Radius Range
+    - The range of allowed random values for `r`.
+- d Line
+  - Randomize Enabled
+    - Allows the d line parameters to be randomized.
+  - d = r
+    - Forces the value of `d` to equal `r`; prevents `d` from randomizing independently.
+  - Randomize Radius
+    - Only visible when `d = r` is not selected.
+    - Allows the d line radius to be randomized.
+  - Radius Range
+    - Only visible when `d = r` is not selected.
+    - The range of allowed random values for `d`.
+- Curve
+  - Randomize Enabled
+    - Allows the curve parameters to be randomized.
+  - Randomize Theta
+    - Allows the `Theta` function to be randomized.
+  - Randomize Phi
+    - Allows the `Phi` function to be randomized.
+  - Randomize t Start
+    - Allows the starting value of `t` to be randomized.
+  - t Start Range
+    - The range of allowed random starting values for `t`.
+  - Rand. t Interval ("Fixed Interval" only)
+    - Allows the distance between the start and end values for `t` to be randomized.
+    - When this is disabled, the distance between the start and end values for `t` will equal that of the previous curve.
+  - t Interval Range ("Fixed Interval" only)
+    - The range of allowed distances between the start and end values for `t`.
+- Randomize Plot
+  - Randomizes the plot using the specified randomization configurations.
+### Style
+- Background
+  - Color
+    - Changes the background color.
+- Inner Geometry
+  - Visible
+    - Changes the visibility of the geometry.
+  - Material
+    - MeshBasicMaterial
+      - Changes the material to [MeshBasicMaterial](https://threejs.org/docs/index.html?q=mesh#api/en/materials/MeshBasicMaterial).
+      - Please note: this material is not affected by lights.
+    - MeshStandardMaterial
+      - Changes the material to [MeshStandardMaterial](https://threejs.org/docs/index.html?q=mesh#api/en/materials/MeshStandardMaterial)
+    - MeshNormalMaterial
+      - Changes the material to [MeshNormalMaterial](https://threejs.org/docs/index.html?q=mesh#api/en/materials/MeshNormalMaterial)
+      - Please note: this material is not affected by lights.
+  - Color
+    - Changes the material color.
+    - Not available on MeshNormalMaterial.
+  - Emissive
+    - Changes the emissive color of the material.
+    - Only available on MeshStandardMaterial.
+  - Emissive Intensity
+    - Changes the emissive intensity of the material.
+    - Only available on MeshStandardMaterial.
+  - Metalness
+    - Changes the metalness of the material.
+    - Only available on MeshStandardMaterial.
+  - Roughness
+    - Changes the roughness of the material.
+    - Only available on MeshStandardMaterial.
+  - Flat Shading
+    - Enables flat shading on the material.
+    - Not available on MeshBasicMaterial.
+  - Wireframe
+    - Enables wireframe on the material.
+- Outer Geometry
+  - Visible
+    - Changes the visibility of the geometry.
+  - Material
+    - MeshBasicMaterial
+      - Changes the material to [MeshBasicMaterial](https://threejs.org/docs/index.html?q=mesh#api/en/materials/MeshBasicMaterial).
+      - Please note: this material is not affected by lights.
+    - MeshStandardMaterial
+      - Changes the material to [MeshStandardMaterial](https://threejs.org/docs/index.html?q=mesh#api/en/materials/MeshStandardMaterial)
+    - MeshNormalMaterial
+      - Changes the material to [MeshNormalMaterial](https://threejs.org/docs/index.html?q=mesh#api/en/materials/MeshNormalMaterial)
+      - Please note: this material is not affected by lights.
+  - Color
+    - Changes the material color.
+    - Not available on MeshNormalMaterial.
+  - Emissive
+    - Changes the emissive color of the material.
+    - Only available on MeshStandardMaterial.
+  - Emissive Intensity
+    - Changes the emissive intensity of the material.
+    - Only available on MeshStandardMaterial.
+  - Metalness
+    - Changes the metalness of the material.
+    - Only available on MeshStandardMaterial.
+  - Roughness
+    - Changes the roughness of the material.
+    - Only available on MeshStandardMaterial.
+  - Flat Shading
+    - Enables flat shading on the material.
+    - Not available on MeshBasicMaterial.
+  - Wireframe
+    - Enables wireframe on the material.
+- d Line
+  - Visible
+    - Changes the visibility of the geometry.
+  - Width
+    - Changes the width of the d line.
+  - Material
+    - MeshBasicMaterial
+      - Changes the material to [MeshBasicMaterial](https://threejs.org/docs/index.html?q=mesh#api/en/materials/MeshBasicMaterial).
+      - Please note: this material is not affected by lights.
+    - MeshStandardMaterial
+      - Changes the material to [MeshStandardMaterial](https://threejs.org/docs/index.html?q=mesh#api/en/materials/MeshStandardMaterial)
+    - MeshNormalMaterial
+      - Changes the material to [MeshNormalMaterial](https://threejs.org/docs/index.html?q=mesh#api/en/materials/MeshNormalMaterial)
+      - Please note: this material is not affected by lights.
+  - Color
+    - Changes the material color.
+    - Not available on MeshNormalMaterial.
+  - Emissive
+    - Changes the emissive color of the material.
+    - Only available on MeshStandardMaterial.
+  - Emissive Intensity
+    - Changes the emissive intensity of the material.
+    - Only available on MeshStandardMaterial.
+  - Metalness
+    - Changes the metalness of the material.
+    - Only available on MeshStandardMaterial.
+  - Roughness
+    - Changes the roughness of the material.
+    - Only available on MeshStandardMaterial.
+  - Flat Shading
+    - Enables flat shading on the material.
+    - Not available on MeshBasicMaterial.
+  - Wireframe
+    - Enables wireframe on the material.
+- d Point
+  - Visible
+    - Changes the visibility of the geometry.
+  - Radius
+    - Changes the radius of the d point.
+  - Material
+    - MeshBasicMaterial
+      - Changes the material to [MeshBasicMaterial](https://threejs.org/docs/index.html?q=mesh#api/en/materials/MeshBasicMaterial).
+      - Please note: this material is not affected by lights.
+    - MeshStandardMaterial
+      - Changes the material to [MeshStandardMaterial](https://threejs.org/docs/index.html?q=mesh#api/en/materials/MeshStandardMaterial)
+    - MeshNormalMaterial
+      - Changes the material to [MeshNormalMaterial](https://threejs.org/docs/index.html?q=mesh#api/en/materials/MeshNormalMaterial)
+      - Please note: this material is not affected by lights.
+  - Color
+    - Changes the material color.
+    - Not available on MeshNormalMaterial.
+  - Emissive
+    - Changes the emissive color of the material.
+    - Only available on MeshStandardMaterial.
+  - Emissive Intensity
+    - Changes the emissive intensity of the material.
+    - Only available on MeshStandardMaterial.
+  - Metalness
+    - Changes the metalness of the material.
+    - Only available on MeshStandardMaterial.
+  - Roughness
+    - Changes the roughness of the material.
+    - Only available on MeshStandardMaterial.
+  - Flat Shading
+    - Enables flat shading on the material.
+    - Not available on MeshBasicMaterial.
+  - Wireframe
+    - Enables wireframe on the material.
+- Curve
+  - Visible
+    - Changes the visibility of the curve.
+  - Curve Draw Type
+    - From Start Point
+      - Draws the curve starting at the point evaluated at the starting value of `t` specified in the curve's t range.
+      - "Fixed Interval" only.
+    - Trail
+      - Draws a trailing curve following the `d Point` up to a given length.
+      - Please note: this curve draw type is a bit buggy at the moment, especially for fast-moving curves.
+  - Color
+    - Changes the curve color.
+  - Width
+    - Changes the curve width.
+  - Trail Length
+    - Changes the maximum length of the curve.
+    - "Trail" curve draw type only.
+  - Trail Decay
+    - Changes how fast the line fades away.
+    - "Trail" curve draw type only.
+- Effects
+  - Bloom
+    - Enabled
+      - Enables bloom.
+    - Intensity
+      - Changes the bloom intensity.
+    - Luminance Threshold
+      - Changes the bloom luminance threshold.
+      - Raise this value to mask out darker elements in the scene.
+    - Luminance Smoothing
+      - Changes the smoothness of the luminance threshold.
+    - Mipmap Blur
+      - Enables mipmap blur.
+  - Chromatic Aberration
+    - Enabled
+      - Enables chromatic aberration.
+    - Offset
+      - Changes the chromatic aberration offset.
+### Lights
+Please note: certain materials are not affected by lights.
+- Ambient
+  - Enabled
+    - Enables ambient lighting.
+  - Intensity
+    - Changes the ambient lighting intensity.
+  - Color
+    - Changes the ambient light color.
+- Directional Light
+  - Enabled
+    - Enables the directional light.
+  - Intensity
+    - Changes the directional light intensity.
+  - Color
+    - Changes the ambient light color.
+  - Position
+    - Changes the position of the ambient light.
+    - Please note: the light is configured to always point to the center of the scene,regardless of its position.
+- Lightformers 1 through 3
+  - Enabled
+    - Enables the lightformer.
+  - Form
+    - Changes the lightformer form.
+  - Intensity
+    - Changes the lightformer intensity.
+  - Color
+    - Changes the lightformer color.
+  - Scale
+    - Changes the size of the lightformer.
+  - Position
+    - Changes the position of the lightformer.
+    - Please note: the lightformers are configured to always point to the center of the scene, regardless of their positions.
+
+## Known Issues
+
+- The outer geometry disappears when scrubbing `t` to the end of its slider within the "Animation" panel and the outer geometry shape is "Sphere".
+  - If you encounter this issue, you will need to reload the page to get the outer geometry to reappear. Sorry about that!
+- Control panel elements can overflow sometimes.
+  - If this happens to you, just collapse and reopen the element's control panel folder or container (not the whole side panel), and it should be positioned correctly.
+- Enabling `Auto Randomize` and setting `Auto Randomize Type` to `Every n Seconds` causes performance issues.
+
+## The Great TODO List
 
 - [ ] Improve keyboard shortcuts.
 - [ ] Get the performance monitor working.
@@ -9,7 +373,7 @@
 - [ ] Allow for negative outer geometry radii after adding opacity options.
 - [ ] Add randomization options for the types of allowed theta and phi functions.
 - [ ] Add style presets.
-- [ ] Improve parameter history display.
+- [ ] Improve parameter history display & functionality.
 - [ ] Move post-processing effects to their own control panel.
 - [ ] Improve control panels.
 - [ ] Put each control panel category into its own slide-out drawer.
@@ -22,3 +386,8 @@
 - [ ] Rename TController since it's doing more than just controlling "t".
 - [ ] Improve project structure.
 - [ ] Befriend a better mathematician, get them to review (and fix) my math, get math published.
+- [ ] Allow "t" to be updated when displaying "Endless" calculation type curves.
+- [ ] Fix issue causing outer geometry to disappear when scrubbing the animation when the outer geometry shape is "Sphere".
+- [ ] Constrain `Randomize @ t` input to prevent users from inputting a value less than `t Start + 20`.
+- [ ] Fix `Auto Randomize Type > Every n Seconds` performance issues.
+- [ ] Add more material types.
