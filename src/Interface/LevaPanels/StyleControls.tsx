@@ -488,12 +488,12 @@ export default function StyleControls() {
                             value: true,
                         },
                     }),
-                    "Chromatic Abberation": folder({
-                        effectsChromaticAbberationEnabled: {
+                    "Chromatic Aberration": folder({
+                        effectsChromaticAberrationEnabled: {
                             label: "Enabled",
                             value: true,
                         },
-                        effectsChromaticAbberationOffset: {
+                        effectsChromaticAberrationOffset: {
                             label: "Offset",
                             value: [0.11, 0],
                         },

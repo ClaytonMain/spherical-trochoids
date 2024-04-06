@@ -40,19 +40,19 @@ const Effects = () => {
             (state.data["Effects.Bloom.effectsBloomMipmapBlur"] as DataInput)
                 .value as boolean
     );
-    const effectsChromaticAbberationEnabled = styleStore?.useStore(
+    const effectsChromaticAberrationEnabled = styleStore?.useStore(
         (state) =>
             (
                 state.data[
-                    "Effects.Chromatic Abberation.effectsChromaticAbberationEnabled"
+                    "Effects.Chromatic Aberration.effectsChromaticAberrationEnabled"
                 ] as DataInput
             ).value as boolean
     );
-    const effectsChromaticAbberationOffset = styleStore?.useStore(
+    const effectsChromaticAberrationOffset = styleStore?.useStore(
         (state) =>
             (
                 state.data[
-                    "Effects.Chromatic Abberation.effectsChromaticAbberationOffset"
+                    "Effects.Chromatic Aberration.effectsChromaticAberrationOffset"
                 ] as DataInput
             ).value as [number, number]
     );
@@ -69,10 +69,10 @@ const Effects = () => {
                 )}
             </>
             <>
-                {effectsChromaticAbberationEnabled && (
+                {effectsChromaticAberrationEnabled && (
                     <ChromaticAberration
                         // @ts-expect-error offset parameter is fine
-                        offset={effectsChromaticAbberationOffset?.map(
+                        offset={effectsChromaticAberrationOffset?.map(
                             (x) => x / 100
                         )}
                     />
